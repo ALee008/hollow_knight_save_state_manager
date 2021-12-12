@@ -1,17 +1,10 @@
 import json
+import shutil
 import pathlib
 
 from typing import Dict
 
 import constants
-
-
-def read_save_state(path: str = "hollow_knight/user3.dat") -> dict:
-    with open(path) as save_state:
-        save_state_entries = save_state.read()
-        save_state_dict = json.loads(save_state_entries)
-
-    return save_state_dict
 
 
 def filter_non_number_value_from(dictionary: dict):
@@ -56,6 +49,31 @@ class Inventory:
 
 class Environment:
     has_city_key: bool
+
+
+class FileIO:
+
+    def __init__(self, user_data_path):
+        self.user_data_path: str = user_data_path
+        self.save_state = self.read_save_state()
+
+    def create_backup(self):
+        shutil.copy(self.user_data_path, self.user_data_path + ".bak")
+
+    def read_save_state(self) -> dict:
+        with open(self.user_data_path) as save_state:
+            save_state_entries = save_state.read()
+            save_state_dict = json.loads(save_state_entries)
+
+        return save_state_dict
+
+    def update_user_data(self, user_changes: dict = None):
+        for key, value in user_changes.items():
+            self.save_state["playerData"][key] = value
+
+    def write_user_data_changes(self):
+        with open(self.user_data_path, "w") as user_data:
+            json.dump(self.save_state, user_data)
 
 
 if __name__ == '__main__':
