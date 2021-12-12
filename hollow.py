@@ -25,10 +25,13 @@ def filter_non_number_value_from(dictionary: dict):
 
 class Charms:
     image_path: pathlib.Path = pathlib.Path("images/charms")
+    # number of available charm notches
     number_of_charm_slots: int
-    # define if charm slot number N exists
-    charm_slots: Dict[str, bool] = {f"gotCharm_{i}": False for i in range(1, 41)}
+    # define if charm in slot number N is available
+    has_charm: Dict[str, bool] = {f"charm#{i}": False for i in range(1, 41)}
     charm_to_image: Dict[str, pathlib.Path]
+    # slot usage per charm
+    charm_slots: Dict[str, int] = {key: constants.CHARM_COSTS[key] for key in has_charm.keys()}
 
     def __init__(self):
         self.charm_to_image = self.map_charm_to_image()
@@ -44,9 +47,8 @@ class Charms:
         return charms
 
 
-class PlayerData:
+class Inventory:
     geo: int
-
     simple_keys: int
     ore: int
     dream_orbs: int
