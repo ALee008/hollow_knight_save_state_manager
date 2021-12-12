@@ -28,7 +28,7 @@ class Charms:
     # number of available charm notches
     number_of_charm_slots: int
     # define if charm in slot number N is available
-    has_charm: Dict[str, bool] = {f"charm#{i}": False for i in range(1, 41)}
+    has_charm: Dict[str, bool] = {key: False for key in constants.CHARMS}
     charm_to_image: Dict[str, pathlib.Path]
     # slot usage per charm
     charm_slots: Dict[str, int] = {key: constants.CHARM_COSTS[key] for key in has_charm.keys()}
@@ -48,10 +48,10 @@ class Charms:
 
 
 class Inventory:
-    geo: int
-    simple_keys: int
-    ore: int
-    dream_orbs: int
+    geo: int = 99_999
+    simple_keys: int = 4
+    ore: int = 6
+    dream_orbs: int = 2400
 
 
 class Environment:
