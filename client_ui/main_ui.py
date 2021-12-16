@@ -1,4 +1,5 @@
 import datetime
+import itertools
 
 import hollow
 
@@ -49,11 +50,28 @@ def update_inventory_ui(window: sg.Window, file_io: hollow.FileIO) -> None:
     return None
 
 
+def chunk(iterable, size):
+    """https://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
+    see answer from senderle
+    """
+    iterable = iter(iterable)
+
+    return iter(lambda: tuple(itertools.islice(iterable, size)), ())
+
+
 def charms_layout():
     charms_details = hollow.Charms()
-    # image_path is of type pathlib.Path
-    layout = [[sg.Image(str(image_path)) for image_path in charms_details.charm_to_image.values()]
-    ]
+    charms_names = chunk(charms_details.charm_to_image.keys(), 10)
+    charms_images = chunk(charms_details.charm_to_image.values(), 10)
+
+    layout = []
+
+    for names in charms_names:
+        layout.append([sg.Text(name) for name in names])
+
+    for images in charms_images:
+        # image path in .values is of type pathlib.Path -> use str() to convert to string
+        layout.append([sg.Image(str(image_path)) for image_path in images])
 
     return layout
 
