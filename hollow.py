@@ -16,6 +16,35 @@ def filter_non_number_value_from(dictionary: dict):
     return result_dict
 
 
+class FileIO:
+
+    def __init__(self, user_data_path):
+        self.user_data_path: str = user_data_path
+        self.save_state = self.read_save_state()
+
+    def create_backup(self):
+        shutil.copy(self.user_data_path, self.user_data_path + ".bak")
+
+    def read_save_state(self) -> dict:
+        with open(self.user_data_path) as save_state:
+            save_state_entries = save_state.read()
+            save_state_dict = json.loads(save_state_entries)
+
+        return save_state_dict
+
+    def update_user_data(self, user_changes: dict = None):
+        for key, value in user_changes.items():
+            self.save_state["playerData"][key] = value
+
+    def write_user_data_changes(self):
+        with open(self.user_data_path, "w") as user_data:
+            json.dump(self.save_state, user_data)
+
+    @property
+    def player_data(self):
+        return self.save_state["playerData"]
+
+
 class Charms:
     image_path: pathlib.Path = pathlib.Path("images/charms")
     # number of available charm notches
@@ -45,35 +74,20 @@ class Inventory:
     simple_keys: int = 4
     ore: int = 6
     dream_orbs: int = 2400
+    play_time: float = None
+
+    def __init__(self, file_handle: FileIO):
+        player_data = file_handle.player_data
+
+        self.geo = player_data["geo"]
+        self.simple_keys = player_data["simpleKeys"]
+        self.ore = player_data["ore"]
+        self.dream_orbs = player_data["dreamOrbs"]
+        self.play_time = player_data["playTime"]
 
 
 class Environment:
     has_city_key: bool
-
-
-class FileIO:
-
-    def __init__(self, user_data_path):
-        self.user_data_path: str = user_data_path
-        self.save_state = self.read_save_state()
-
-    def create_backup(self):
-        shutil.copy(self.user_data_path, self.user_data_path + ".bak")
-
-    def read_save_state(self) -> dict:
-        with open(self.user_data_path) as save_state:
-            save_state_entries = save_state.read()
-            save_state_dict = json.loads(save_state_entries)
-
-        return save_state_dict
-
-    def update_user_data(self, user_changes: dict = None):
-        for key, value in user_changes.items():
-            self.save_state["playerData"][key] = value
-
-    def write_user_data_changes(self):
-        with open(self.user_data_path, "w") as user_data:
-            json.dump(self.save_state, user_data)
 
 
 if __name__ == '__main__':
