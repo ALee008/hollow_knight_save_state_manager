@@ -65,7 +65,7 @@ def charms_layout():
     charms_images = chunk(charms_details.charm_to_image.values(), 10)
 
     layout = []
-
+    # TODO: make is so text is above image.
     for names in charms_names:
         layout.append([sg.Text(name) for name in names])
 
