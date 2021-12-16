@@ -4,7 +4,7 @@ import hollow
 
 import PySimpleGUI as sg
 
-SIZE = (10, 1)
+SIZE = (12, 1)
 
 
 def display_play_time(play_time: float) -> str:
@@ -23,9 +23,36 @@ def play_time_from_time(play_time: str) -> float:
     return int(hh) * 3600 + int(mm) * 60 + float(ss)
 
 
-def inventory():
+def inventory_layout():
     layout = [
-        [sg.Text("Play Time", size=SIZE), sg.Input("", key="-PLAY-TIME-")]
+        [sg.Text("Play Time", size=SIZE), sg.Input("", key="-PLAY-TIME-")],
+        [sg.Text("Geo", size=SIZE), sg.Input("", key="-GEO-")],
+        [sg.Text("Pale Ore", size=SIZE), sg.Input("", key="-PALE-ORE-")],
+        [sg.Text("Dream Orbs", size=SIZE), sg.Input("", key="-DREAM-ORBS-")],
+        [sg.Text("Simple Keys", size=SIZE), sg.Input("", key="-SIMPLE-KEYS")]
+    ]
+
+    return layout
+
+
+def update_inventory_ui(window: sg.Window, file_io: hollow.FileIO) -> None:
+    """ Update sg.Input in Inventory tab.
+    TODO: add validation when user interacts.
+    """
+    inventory_details = hollow.Inventory(file_io)
+    window["-PLAY-TIME-"].update(display_play_time(inventory_details.play_time))
+    window["-GEO-"].update(inventory_details.geo)
+    window["-PALE-ORE-"].update(inventory_details.ore)
+    window["-DREAM-ORBS-"].update(inventory_details.dream_orbs)
+    window["-SIMPLE-KEYS"].update(inventory_details.simple_keys)
+
+    return None
+
+
+def charms_layout():
+    charms_details = hollow.Charms()
+    # image_path is of type pathlib.Path
+    layout = [[sg.Image(str(image_path)) for image_path in charms_details.charm_to_image.values()]
     ]
 
     return layout
@@ -36,15 +63,15 @@ def main():
     menu_def = [['&File', ['&Open', '&Save', 'E&xit']],
                 ['&Help', '&About...'], ]
 
-    # ------ Tabs ------ #
-    inventory_tab = inventory()
-    charms_tab = []
+    # ------ Tabs ------ # TODO: refactor tabs layout
+    inventory_tab = inventory_layout()
+    charms_tab = charms_layout()
     tab_group = [
         [sg.TabGroup(
             [
                 [sg.Tab("Inventory", inventory_tab, border_width=10, tooltip="Inventory Details",
                         element_justification="center"),
-                 sg.Tab("Charms", charms_tab, border_width=10, tooltip="Inventory Details",
+                 sg.Tab("Charms", charms_tab, border_width=10, tooltip="Charms",
                         element_justification="center"),
                  ]
             ]
@@ -65,11 +92,9 @@ def main():
             break
         if event == "Open":
             save_state_file_path = sg.popup_get_file("Save State", no_window=True, file_types=(("User Data", "*.dat"),))
-            print(save_state_file_path)
             file_io = hollow.FileIO(save_state_file_path)
-            inventory_details = hollow.Inventory(file_io)
-            print(display_play_time(inventory_details.play_time))
-            window["-PLAY-TIME-"].update(display_play_time(inventory_details.play_time))
+            update_inventory_ui(window, file_io)
+
 
     window.close()
 

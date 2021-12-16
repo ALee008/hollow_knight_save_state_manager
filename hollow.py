@@ -46,7 +46,7 @@ class FileIO:
 
 
 class Charms:
-    image_path: pathlib.Path = pathlib.Path("images/charms")
+    image_path: pathlib.Path = pathlib.Path("../images/charms")
     # number of available charm notches
     number_of_charm_slots: int
     # define if charm in slot number N is available
