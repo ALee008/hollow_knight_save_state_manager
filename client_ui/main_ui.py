@@ -56,7 +56,7 @@ def chunk(iterable, size):
     """
     iterable = iter(iterable)
 
-    return iter(lambda: tuple(itertools.islice(iterable, size)), ())
+    return iter(lambda: list(itertools.islice(iterable, size)), [])
 
 
 def charms_layout():
@@ -67,34 +67,17 @@ def charms_layout():
     charms_image_fields = [sg.Image(str(image_path)) for image_path in charms_images]
     charms_checkboxes = [sg.Checkbox('', enable_events=True, key=charm_name) for charm_name in charms_names]
 
-    # charms_names_chunked = chunk(charms_names, 10)
-    # charms_images_chunked = chunk(charms_images, 10)
-    # checkboxes_chunked = chunk(charms_checkboxes, 10)
-    #
-    # layout = []
-    # # TODO: make is so text is above image. Also: make image either clickable or add a checkbox below image!
-    # for names in charms_names_chunked:
-    #     layout.append([sg.Text(name) for name in names])
-    #
-    # for images in charms_images_chunked:
-    #     # image path in .values is of type pathlib.Path -> use str() to convert to string
-    #     layout.append([sg.Image(str(image_path)) for image_path in images])
-    #
-    # for checkbox in checkboxes_chunked:
-    #     layout.append([check for check in checkbox])
-    #
     names_images_checkboxes = [
         list(map(lambda x: [x], elements)) for elements in zip(charms_text_fields, charms_image_fields, charms_checkboxes)
     ]
 
     frames_layout = []
 
-    for fl in names_images_checkboxes:
-        frames_layout.append(sg.Frame(layout=fl, title=fl[0][0].DisplayText, element_justification="center"))
+    for frame_layout in names_images_checkboxes:
+        frames_layout.append(sg.Frame(layout=frame_layout, title="", element_justification="center"))
 
-    final_layout = [
-        frames_layout,
-    ]
+    final_layout = list(chunk(frames_layout, 10))
+
 
     return final_layout
 
@@ -111,9 +94,9 @@ def main():
         [sg.TabGroup(
             [
                 [sg.Tab("Inventory", inventory_tab, border_width=10, tooltip="Inventory Details",
-                        element_justification="center"),
+                        element_justification="left"),
                  sg.Tab("Charms", charms_tab, border_width=10, tooltip="Charms",
-                        element_justification="center"),
+                        element_justification="left"),
                  ]
             ]
         )]
