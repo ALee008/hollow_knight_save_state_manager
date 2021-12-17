@@ -61,19 +61,42 @@ def chunk(iterable, size):
 
 def charms_layout():
     charms_details = hollow.Charms()
-    charms_names = chunk(charms_details.charm_to_image.keys(), 10)
-    charms_images = chunk(charms_details.charm_to_image.values(), 10)
+    charms_names = charms_details.charm_to_image.keys()
+    charms_text_fields = [sg.Text(name) for name in charms_names]
+    charms_images = charms_details.charm_to_image.values()
+    charms_image_fields = [sg.Image(str(image_path)) for image_path in charms_images]
+    charms_checkboxes = [sg.Checkbox('', enable_events=True, key=charm_name) for charm_name in charms_names]
 
-    layout = []
-    # TODO: make is so text is above image. Also: make image either clickable or add a checkbox below image!
-    for names in charms_names:
-        layout.append([sg.Text(name) for name in names])
+    # charms_names_chunked = chunk(charms_names, 10)
+    # charms_images_chunked = chunk(charms_images, 10)
+    # checkboxes_chunked = chunk(charms_checkboxes, 10)
+    #
+    # layout = []
+    # # TODO: make is so text is above image. Also: make image either clickable or add a checkbox below image!
+    # for names in charms_names_chunked:
+    #     layout.append([sg.Text(name) for name in names])
+    #
+    # for images in charms_images_chunked:
+    #     # image path in .values is of type pathlib.Path -> use str() to convert to string
+    #     layout.append([sg.Image(str(image_path)) for image_path in images])
+    #
+    # for checkbox in checkboxes_chunked:
+    #     layout.append([check for check in checkbox])
+    #
+    names_images_checkboxes = [
+        list(map(lambda x: [x], elements)) for elements in zip(charms_text_fields, charms_image_fields, charms_checkboxes)
+    ]
 
-    for images in charms_images:
-        # image path in .values is of type pathlib.Path -> use str() to convert to string
-        layout.append([sg.Image(str(image_path)) for image_path in images])
+    frames_layout = []
 
-    return layout
+    for fl in names_images_checkboxes:
+        frames_layout.append(sg.Frame(layout=fl, title=fl[0][0].DisplayText, element_justification="center"))
+
+    final_layout = [
+        frames_layout,
+    ]
+
+    return final_layout
 
 
 def main():
@@ -112,7 +135,6 @@ def main():
             save_state_file_path = sg.popup_get_file("Save State", no_window=True, file_types=(("User Data", "*.dat"),))
             file_io = hollow.FileIO(save_state_file_path)
             update_inventory_ui(window, file_io)
-
 
     window.close()
 
