@@ -6,6 +6,7 @@ import hollow
 import PySimpleGUI as sg
 
 SIZE = (12, 1)
+charms_details = hollow.Charms()
 
 
 def display_play_time(play_time: float) -> str:
@@ -60,12 +61,13 @@ def chunk(iterable, size):
 
 
 def charms_layout():
-    charms_details = hollow.Charms()
+
     charms_names = charms_details.charm_to_image.keys()
     charms_text_fields = [sg.Text(name) for name in charms_names]
     charms_images = charms_details.charm_to_image.values()
     charms_image_fields = [sg.Image(str(image_path)) for image_path in charms_images]
-    charms_checkboxes = [sg.Checkbox('', enable_events=True, key=charm_name) for charm_name in charms_names]
+    # add .PNG to identify if charm checkbox event fired
+    charms_checkboxes = [sg.Checkbox('', enable_events=True, key=charm_name+".PNG") for charm_name in charms_names]
 
     names_images_checkboxes = [
         list(map(lambda x: [x], elements)) for elements in zip(charms_text_fields, charms_image_fields, charms_checkboxes)
@@ -77,7 +79,6 @@ def charms_layout():
         frames_layout.append(sg.Frame(layout=frame_layout, title="", element_justification="center"))
 
     final_layout = list(chunk(frames_layout, 10))
-
 
     return final_layout
 
@@ -118,6 +119,8 @@ def main():
             save_state_file_path = sg.popup_get_file("Save State", no_window=True, file_types=(("User Data", "*.dat"),))
             file_io = hollow.FileIO(save_state_file_path)
             update_inventory_ui(window, file_io)
+        if event.endswith(".PNG"):
+            charms_details.has_charm[event.rstrip(".PNG")] = values[event]
 
     window.close()
 
