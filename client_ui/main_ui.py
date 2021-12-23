@@ -96,7 +96,7 @@ def main():
             [
                 [sg.Tab("Inventory", inventory_tab, border_width=10, tooltip="Inventory Details",
                         element_justification="left"),
-                 sg.Tab("Charms", charms_tab, border_width=10, tooltip="Charms",
+                 sg.Tab("Charms", charms_tab, border_width=10, tooltip="Charms", visible=False,
                         element_justification="left"),
                  ]
             ]
@@ -111,16 +111,26 @@ def main():
     # define window
     window = sg.Window("Hollow Knight Save State Editor", layout + tab_group)
 
+    file_io = None
+
     while True:
         event, values = window.read()
         if event in ("Exit", sg.WIN_CLOSED):
             break
         if event == "Open":
-            save_state_file_path = sg.popup_get_file("Save State", no_window=True, file_types=(("User Data", "*.dat"),))
-            file_io = hollow.FileIO(save_state_file_path)
-            update_inventory_ui(window, file_io)
+            try:
+                save_state_file_path = sg.popup_get_file("Save State", no_window=True, file_types=(("User Data", "*.dat"),))
+                file_io = hollow.FileIO(save_state_file_path)
+                update_inventory_ui(window, file_io)
+            except FileNotFoundError:  # this error is raised if no file is chosen.
+                print("No file chosen.")
         if event.endswith(".PNG"):
             charms_details.has_charm[event.rstrip(".PNG")] = values[event]
+        if event == "Save":
+            if file_io is None:
+                sg.popup("No user data file opened yet.")
+                continue
+            file_io.update_user_data(charms_details.has_charm)  # TODO: hasCharm_NUMMER muss zu hollow hinzugefuegt werden
 
     window.close()
 
