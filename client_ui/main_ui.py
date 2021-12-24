@@ -1,5 +1,6 @@
 import datetime
 import itertools
+from typing import Any
 
 import hollow
 
@@ -9,10 +10,18 @@ SIZE = (12, 1)
 charms_details = hollow.Charms()
 
 
+class UserChanges:
+    def __init__(self):
+        self.user_changes_dict = dict()
+
+    def add_change(self, key: str, value: Any):
+        self.user_changes_dict[key] = value
+
+
 def display_play_time(play_time: float) -> str:
     """Convert playTime from save state - which is float - to human readably time hh:mm:ssss
     """
-    timedelta = datetime.timedelta(seconds=play_time)
+    timedelta = datetime.timedelta(seconds=round(play_time))
     # return its string representation, which is the desired format.
     return str(timedelta)
 
@@ -31,7 +40,7 @@ def inventory_layout():
         [sg.Text("Geo", size=SIZE), sg.Input("", key="-GEO-")],
         [sg.Text("Pale Ore", size=SIZE), sg.Input("", key="-PALE-ORE-")],
         [sg.Text("Dream Orbs", size=SIZE), sg.Input("", key="-DREAM-ORBS-")],
-        [sg.Text("Simple Keys", size=SIZE), sg.Input("", key="-SIMPLE-KEYS")]
+        [sg.Text("Simple Keys", size=SIZE), sg.Input("", key="-SIMPLE-KEYS-")]
     ]
 
     return layout
@@ -46,9 +55,26 @@ def update_inventory_ui(window: sg.Window, file_io: hollow.FileIO) -> None:
     window["-GEO-"].update(inventory_details.geo)
     window["-PALE-ORE-"].update(inventory_details.ore)
     window["-DREAM-ORBS-"].update(inventory_details.dream_orbs)
-    window["-SIMPLE-KEYS"].update(inventory_details.simple_keys)
+    window["-SIMPLE-KEYS-"].update(inventory_details.simple_keys)
 
     return None
+
+
+def register_user_changes(values: dict) -> dict:
+    """collect all user changes and return dictionary containing changes.
+    TODO: check for valid bounds!
+    :param values: dictionary from GUI containing values of window fields.
+    :return:
+    """
+    user_changes = UserChanges()
+    play_time = play_time_from_time(values["-PLAY-TIME-"])
+    user_changes.add_change("playTime", play_time)
+    user_changes.add_change("geo", abs(int(values["-GEO-"])))
+    user_changes.add_change("ore", abs(int(values["-PALE-ORE-"])))
+    user_changes.add_change("simpleKeys", abs(int(values["-SIMPLE-KEYS-"])))
+    user_changes.add_change("dreamOrbs", abs(int(values["-DREAM-ORBS-"])))
+
+    return user_changes.user_changes_dict
 
 
 def chunk(iterable, size):
@@ -130,7 +156,13 @@ def main():
             if file_io is None:
                 sg.popup("No user data file opened yet.")
                 continue
-            file_io.update_user_data(charms_details.has_charm)  # TODO: hasCharm_NUMMER muss zu hollow hinzugefuegt werden
+            # update internal dictionary
+            user_changes = register_user_changes(values)
+
+            #file_io.update_user_data(charms_details.has_charm)  # TODO: hasCharm_NUMMER muss zu hollow hinzugefuegt werden
+            file_io.update_user_data(user_changes)
+            file_io.write_user_data_changes()  # dump changes
+            sg.popup("Saved")
 
     window.close()
 
