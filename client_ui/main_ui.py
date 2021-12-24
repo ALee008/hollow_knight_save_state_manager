@@ -111,7 +111,7 @@ def charms_layout():
 
 def main():
     # ------ Menu Definition ------ #
-    menu_def = [['&File', ['&Open', '&Save', 'E&xit']],
+    menu_def = [['&File', ['&Open', 'Create &Backup', '&Save', 'E&xit']],
                 ['&Help', '&About...'], ]
 
     # ------ Tabs ------ # TODO: refactor tabs layout
@@ -122,7 +122,7 @@ def main():
             [
                 [sg.Tab("Inventory", inventory_tab, border_width=10, tooltip="Inventory Details",
                         element_justification="left"),
-                 sg.Tab("Charms", charms_tab, border_width=10, tooltip="Charms", visible=False,
+                 sg.Tab("Charms", charms_tab, border_width=10, tooltip="Charms", disabled=True,
                         element_justification="left"),
                  ]
             ]
@@ -148,10 +148,17 @@ def main():
                 save_state_file_path = sg.popup_get_file("Save State", no_window=True, file_types=(("User Data", "*.dat"),))
                 file_io = hollow.FileIO(save_state_file_path)
                 update_inventory_ui(window, file_io)
+                window["Charms"].update(disabled=False)
             except FileNotFoundError:  # this error is raised if no file is chosen.
                 print("No file chosen.")
         if event.endswith(".PNG"):
             charms_details.has_charm[event.rstrip(".PNG")] = values[event]
+        if event == "Create Backup":
+            if file_io is None:
+                sg.popup("No user data file opened yet.")
+                continue
+            file_io.create_backup()
+            sg.popup(f"Backup created at {file_io.backup_path}!")
         if event == "Save":
             if file_io is None:
                 sg.popup("No user data file opened yet.")

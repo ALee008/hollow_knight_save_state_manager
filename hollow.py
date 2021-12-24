@@ -20,10 +20,11 @@ class FileIO:
 
     def __init__(self, user_data_path):
         self.user_data_path: str = user_data_path
+        self.backup_path: str = user_data_path + ".bak"
         self.save_state = self.read_save_state()
 
     def create_backup(self):
-        shutil.copy(self.user_data_path, self.user_data_path + ".bak")
+        shutil.copy(self.user_data_path, self.backup_path)
 
     def read_save_state(self) -> dict:
         with open(self.user_data_path) as save_state:
