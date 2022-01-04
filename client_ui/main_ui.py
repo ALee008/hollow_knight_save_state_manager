@@ -1,13 +1,14 @@
 import datetime
 import itertools
-from typing import Any
+from typing import Any, Dict
 
 import hollow
 
 import PySimpleGUI as sg
 
 SIZE = (12, 1)
-charms_details = hollow.Charms()
+charms_details = hollow.CharmsImages()
+got_charms = hollow.map_charm_to_order_number()
 
 
 class UserChanges:
@@ -48,7 +49,6 @@ def inventory_layout():
 
 def update_inventory_ui(window: sg.Window, file_io: hollow.FileIO) -> None:
     """ Update sg.Input in Inventory tab.
-    TODO: add validation when user interacts.
     """
     inventory_details = hollow.Inventory(file_io)
     window["-PLAY-TIME-"].update(display_play_time(inventory_details.play_time))
@@ -60,7 +60,7 @@ def update_inventory_ui(window: sg.Window, file_io: hollow.FileIO) -> None:
     return None
 
 
-def register_user_changes(values: dict) -> dict:
+def register_user_changes(values: Dict[str, Any]) -> dict:
     """collect all user changes and return dictionary containing changes.
     TODO: check for valid bounds!
     :param values: dictionary from GUI containing values of window fields.
@@ -74,7 +74,23 @@ def register_user_changes(values: dict) -> dict:
     user_changes.add_change("simpleKeys", abs(int(values["-SIMPLE-KEYS-"])))
     user_changes.add_change("dreamOrbs", abs(int(values["-DREAM-ORBS-"])))
 
+    register_charms_changes(user_changes, values)
+
     return user_changes.user_changes_dict
+
+
+def register_charms_changes(user_changes: UserChanges, values: Dict[str, Any]) -> None:
+    # update gotCharms_i with value from dictionary `values`
+    for key in values:
+        if isinstance(key, str) and ".PNG" in key:
+            charm_name = key.rstrip(".PNG")
+            got_charms[charm_name][1] = values[key]
+
+    # add updated values to user_changes
+    for charms, got_charm in got_charms.items():
+        user_changes.add_change(got_charm[0], got_charm[1])
+
+    return None
 
 
 def chunk(iterable, size):
@@ -151,8 +167,6 @@ def main():
                 window["Charms"].update(disabled=False)
             except FileNotFoundError:  # this error is raised if no file is chosen.
                 print("No file chosen.")
-        if event.endswith(".PNG"):
-            charms_details.has_charm[event.rstrip(".PNG")] = values[event]
         if event == "Create Backup":
             if file_io is None:
                 sg.popup("No user data file opened yet.")
@@ -165,8 +179,6 @@ def main():
                 continue
             # update internal dictionary
             user_changes = register_user_changes(values)
-
-            #file_io.update_user_data(charms_details.has_charm)  # TODO: hasCharm_NUMMER muss zu hollow hinzugefuegt werden
             file_io.update_user_data(user_changes)
             file_io.write_user_data_changes()  # dump changes
             sg.popup("Saved")

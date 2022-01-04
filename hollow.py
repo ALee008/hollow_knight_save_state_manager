@@ -2,7 +2,7 @@ import json
 import shutil
 import pathlib
 
-from typing import Dict
+from typing import Dict, List, Union
 
 import constants
 
@@ -14,6 +14,16 @@ def filter_non_number_value_from(dictionary: dict):
             result_dict[key] = value
 
     return result_dict
+
+
+def map_charm_to_order_number() -> Dict[str, List[Union[str, bool]]]:
+    """Map name of charm to key in user.dat and a flag if user has charm.
+    E.g.: {"Wayward Compass": ["gotCharm_1": False], ... }
+    """
+    charms_to_number = {charm: [f"gotCharm_{idx}", False] for idx, charm in
+                        enumerate(constants.CHARMS, start=1)}
+
+    return charms_to_number
 
 
 class FileIO:
@@ -46,15 +56,9 @@ class FileIO:
         return self.save_state["playerData"]
 
 
-class Charms:
+class CharmsImages:
     image_path: pathlib.Path = pathlib.Path("../images/charms")
-    # number of available charm notches
-    number_of_charm_slots: int
-    # define if charm in slot number N is available
-    has_charm: Dict[str, bool] = {key: False for key in constants.CHARMS}
     charm_to_image: Dict[str, pathlib.Path]
-    # slot usage per charm
-    charm_slots: Dict[str, int] = {key: constants.CHARM_COSTS[key] for key in has_charm.keys()}
 
     def __init__(self):
         self.charm_to_image = self.map_charm_to_image()
@@ -92,7 +96,7 @@ class Environment:
 
 
 if __name__ == '__main__':
-    charms_ = Charms()
+    charms_ = CharmsImages()
 
 # ["playerData"]["geo"]
 # ["playerData"]["charmSlots"]
