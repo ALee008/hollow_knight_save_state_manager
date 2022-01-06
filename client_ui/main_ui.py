@@ -21,9 +21,9 @@ class UserChanges:
 def display_play_time(play_time: float) -> str:
     """Convert playTime from save state - which is float - to human readably time hh:mm:ssss
     """
-    timedelta = datetime.timedelta(seconds=round(play_time))
+    seconds = round(play_time)
     # return its string representation, which is the desired format.
-    return str(timedelta)
+    return f"{seconds // 3600}:{seconds // 60 % 60}:{seconds % 60}"
 
 
 def play_time_from_time(play_time: str) -> float:
@@ -183,9 +183,12 @@ def main():
             file_io.create_backup()
             sg.popup(f"Backup created at {file_io.backup_path}!")
         if ".PNG" in event:
+            # get changed charm and update its property; object will later be used to save changes
             charm: hollow.Charm = charms_factory[event.rstrip(".PNG")]
             charm.got_charm = values[event]
         if ".SLOTS" in event:
+            if values[event] and values[event][-1] not in '0123456789':
+                window[event].update(values[event][:-1])
             charm: hollow.Charm = charms_factory[event.rstrip(".SLOTS")]
             charm.cost = values[event]
         if event == "Save":
