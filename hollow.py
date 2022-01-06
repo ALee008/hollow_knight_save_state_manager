@@ -76,27 +76,19 @@ class CharmsImages:
 
 class Charm:
 
-    def __init__(self, name: str, ordinal: int, got_charm: bool):
+    def __init__(self, file_handle: FileIO, name: str, ordinal: int):
+        self.player_data = file_handle.save_state["playerData"]
         self.name = name
         self.ordinal = ordinal
-        self.got_charm = got_charm
-        self.cost = None
-
-    @property
-    def cost(self):
-        return constants.CHARM_COSTS[self.name]
-
-    @cost.setter
-    def cost(self, value):
-        """used to update cost from user interface."""
-        self.cost = value
+        self.got_charm = self.player_data.get(f"gotCharm_{self.ordinal}", False)
+        self.cost = constants.CHARM_COSTS[self.name]
 
 
 class CharmFactory:
-    charms: Dict[str, List[Charm]]
+    charms: Dict[str, Charm]
 
-    def __init__(self):
-        self.charms = {name: Charm(name, idx, False) for idx, name in constants.ORDERED_CHARMS}
+    def __init__(self, file_handle: FileIO):
+        self.charms = {name: Charm(file_handle, name, idx) for name, idx in constants.CHARMS_ORDINALS.items()}
 
 
 class Inventory:

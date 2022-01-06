@@ -8,7 +8,6 @@ import PySimpleGUI as sg
 
 SIZE = (12, 1)
 charms_image_details = hollow.CharmsImages()
-charms = hollow.CharmFactory().charms
 
 
 class UserChanges:
@@ -60,10 +59,20 @@ def update_inventory_ui(window: sg.Window, file_io: hollow.FileIO) -> None:
     return None
 
 
-def register_user_changes(values: Dict[str, Any]) -> dict:
+def update_charms_ui(window: sg.Window, file_io: hollow.FileIO) -> dict:
+    """ Update Charms Tab. Activate Charms from user data that have already been collected."""
+    all_charms = hollow.CharmFactory(file_io).charms
+    for name, charm in all_charms.items():
+        window[name+".PNG"].update(charm.got_charm)
+
+    return all_charms
+
+
+def register_user_changes(charms_factory: dict, values: Dict[str, Any]) -> dict:
     """collect all user changes and return dictionary containing changes.
     TODO: check for valid bounds!
     :param values: dictionary from GUI containing values of window fields.
+    :param charms_factory: factory containing all changes made to charms
     :return:
     """
     user_changes = UserChanges()
@@ -74,21 +83,15 @@ def register_user_changes(values: Dict[str, Any]) -> dict:
     user_changes.add_change("simpleKeys", abs(int(values["-SIMPLE-KEYS-"])))
     user_changes.add_change("dreamOrbs", abs(int(values["-DREAM-ORBS-"])))
 
-    register_charms_changes(user_changes, values)
+    register_charms_changes(user_changes, charms_factory)
 
     return user_changes.user_changes_dict
 
 
-def register_charms_changes(user_changes: UserChanges, values: Dict[str, Any]) -> None:
+def register_charms_changes(user_changes: UserChanges, charms_factory: dict) -> None:
     # update gotCharms_i with value from dictionary `values`
-    for key in values:  #TODO: use charm Factory here
-        if isinstance(key, str) and ".PNG" in key:
-            charm_order_index = int(key.rstrip(".PNG"))
-            got_charms[charm_name][1] = values[key]
-
-    # add updated values to user_changes
-    for charms, got_charm in got_charms.items():
-        user_changes.add_change(got_charm[0], got_charm[1])
+    for charm in charms_factory.values():
+        user_changes.add_change(f"gotCharm_{charm.ordinal}", charm.got_charm)
 
     return None
 
@@ -109,7 +112,7 @@ def charms_layout():
     charms_images = charms_image_details.charm_to_image.values()
     charms_image_fields = [sg.Image(str(image_path)) for image_path in charms_images]
     # add .PNG to identify if charm checkbox event fired
-    charms_checkboxes = [sg.Checkbox('', enable_events=True, key=str(idx)+".PNG") for idx in range(len(charms_names))]
+    charms_checkboxes = [sg.Checkbox('', enable_events=True, key=charm_name+".PNG") for charm_name in charms_names]
 
     names_images_checkboxes = [
         list(map(lambda x: [x], elements)) for elements in zip(charms_text_fields, charms_image_fields, charms_checkboxes)
@@ -171,6 +174,8 @@ def main():
                 file_io = hollow.FileIO(save_state_file_path)
                 update_inventory_ui(window, file_io)
                 window["Charms"].update(disabled=False)
+                # charms_factory will be used to update save state.
+                charms_factory = update_charms_ui(window, file_io)
             except FileNotFoundError:  # this error is raised if no file is chosen.
                 print("No file chosen.")
         if event == "Create Backup":
@@ -179,12 +184,15 @@ def main():
                 continue
             file_io.create_backup()
             sg.popup(f"Backup created at {file_io.backup_path}!")
+        if ".PNG" in event:
+            charm: hollow.Charm = charms_factory[event.rstrip(".PNG")]
+            charm.got_charm = values[event]
         if event == "Save":
             if file_io is None:
                 sg.popup("No user data file opened yet.")
                 continue
             # update internal dictionary
-            user_changes = register_user_changes(values)
+            user_changes = register_user_changes(charms_factory, values)
             file_io.update_user_data(user_changes)
             file_io.write_user_data_changes()  # dump changes
             sg.popup("Saved")
