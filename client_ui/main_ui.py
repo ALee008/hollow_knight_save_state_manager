@@ -64,6 +64,7 @@ def update_charms_ui(window: sg.Window, file_io: hollow.FileIO) -> dict:
     all_charms = hollow.CharmFactory(file_io).charms
     for name, charm in all_charms.items():
         window[name+".PNG"].update(charm.got_charm)
+        window[name+".SLOTS"].update(charm.cost)
 
     return all_charms
 
@@ -92,6 +93,7 @@ def register_charms_changes(user_changes: UserChanges, charms_factory: dict) -> 
     # update gotCharms_i with value from dictionary `values`
     for charm in charms_factory.values():
         user_changes.add_change(f"gotCharm_{charm.ordinal}", charm.got_charm)
+        user_changes.add_change(f"charmCost_{charm.ordinal}", charm.cost)
 
     return None
 
@@ -113,10 +115,6 @@ def charms_layout():
     charms_image_fields = [sg.Image(str(image_path)) for image_path in charms_images]
     # add .PNG to identify if charm checkbox event fired
     charms_checkboxes = [sg.Checkbox('', enable_events=True, key=charm_name+".PNG") for charm_name in charms_names]
-
-    names_images_checkboxes = [
-        list(map(lambda x: [x], elements)) for elements in zip(charms_text_fields, charms_image_fields, charms_checkboxes)
-    ]
 
     charms_slots_inputs = [sg.Input("", enable_events=True, key=charm_name + ".SLOTS", size=(2, 1),
                                     tooltip="Slots used") for charm_name in charms_names]
@@ -187,6 +185,9 @@ def main():
         if ".PNG" in event:
             charm: hollow.Charm = charms_factory[event.rstrip(".PNG")]
             charm.got_charm = values[event]
+        if ".SLOTS" in event:
+            charm: hollow.Charm = charms_factory[event.rstrip(".SLOTS")]
+            charm.cost = values[event]
         if event == "Save":
             if file_io is None:
                 sg.popup("No user data file opened yet.")
