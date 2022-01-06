@@ -7,8 +7,8 @@ import hollow
 import PySimpleGUI as sg
 
 SIZE = (12, 1)
-charms_details = hollow.CharmsImages()
-got_charms = hollow.map_charm_to_order_number()
+charms_image_details = hollow.CharmsImages()
+charms = hollow.CharmFactory().charms
 
 
 class UserChanges:
@@ -81,9 +81,9 @@ def register_user_changes(values: Dict[str, Any]) -> dict:
 
 def register_charms_changes(user_changes: UserChanges, values: Dict[str, Any]) -> None:
     # update gotCharms_i with value from dictionary `values`
-    for key in values:
+    for key in values:  #TODO: use charm Factory here
         if isinstance(key, str) and ".PNG" in key:
-            charm_name = key.rstrip(".PNG")
+            charm_order_index = int(key.rstrip(".PNG"))
             got_charms[charm_name][1] = values[key]
 
     # add updated values to user_changes
@@ -104,16 +104,22 @@ def chunk(iterable, size):
 
 def charms_layout():
 
-    charms_names = charms_details.charm_to_image.keys()
+    charms_names = charms_image_details.charm_to_image.keys()
     charms_text_fields = [sg.Text(name) for name in charms_names]
-    charms_images = charms_details.charm_to_image.values()
+    charms_images = charms_image_details.charm_to_image.values()
     charms_image_fields = [sg.Image(str(image_path)) for image_path in charms_images]
     # add .PNG to identify if charm checkbox event fired
-    charms_checkboxes = [sg.Checkbox('', enable_events=True, key=charm_name+".PNG") for charm_name in charms_names]
+    charms_checkboxes = [sg.Checkbox('', enable_events=True, key=str(idx)+".PNG") for idx in range(len(charms_names))]
 
     names_images_checkboxes = [
         list(map(lambda x: [x], elements)) for elements in zip(charms_text_fields, charms_image_fields, charms_checkboxes)
     ]
+
+    charms_slots_inputs = [sg.Input("", enable_events=True, key=charm_name + ".SLOTS", size=(2, 1),
+                                    tooltip="Slots used") for charm_name in charms_names]
+
+    names_images_checkboxes = [list(map(lambda x: [x], elements)) for elements in
+                               zip(charms_text_fields, charms_image_fields, charms_checkboxes, charms_slots_inputs)]
 
     frames_layout = []
 

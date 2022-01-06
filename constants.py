@@ -40,6 +40,8 @@ CHARMS = [
     "Carefree Melody",
     "Kingsoul",
 ]
+# {1: "Wayward Compass", 2: "Gathering Swarm", ...}
+ORDERED_CHARMS = {idx: charm for idx, charm in enumerate(CHARMS, start=1)}
 
 # "Grimmchild / Carefree Melody"
 

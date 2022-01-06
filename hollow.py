@@ -74,6 +74,31 @@ class CharmsImages:
         return charms
 
 
+class Charm:
+
+    def __init__(self, name: str, ordinal: int, got_charm: bool):
+        self.name = name
+        self.ordinal = ordinal
+        self.got_charm = got_charm
+        self.cost = None
+
+    @property
+    def cost(self):
+        return constants.CHARM_COSTS[self.name]
+
+    @cost.setter
+    def cost(self, value):
+        """used to update cost from user interface."""
+        self.cost = value
+
+
+class CharmFactory:
+    charms: Dict[str, List[Charm]]
+
+    def __init__(self):
+        self.charms = {name: Charm(name, idx, False) for idx, name in constants.ORDERED_CHARMS}
+
+
 class Inventory:
     geo: int = 99_999
     simple_keys: int = 4
