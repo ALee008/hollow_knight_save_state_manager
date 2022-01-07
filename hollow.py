@@ -81,7 +81,7 @@ class Charm:
         self.name = name
         self.ordinal = ordinal
         self.got_charm = self.player_data.get(f"gotCharm_{self.ordinal}", False)
-        self.cost = constants.CHARM_COSTS[self.name]
+        self.cost = self.player_data.get(f"charmCost_{self.ordinal}", constants.CHARM_COSTS[self.name])
 
 
 class CharmFactory:
