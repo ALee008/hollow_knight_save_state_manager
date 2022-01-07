@@ -92,11 +92,6 @@ class CharmFactory:
 
 
 class Inventory:
-    geo: int = 99_999
-    simple_keys: int = 4
-    ore: int = 6
-    dream_orbs: int = 2400
-    play_time: float = None
 
     def __init__(self, file_handle: FileIO):
         player_data = file_handle.player_data
@@ -106,6 +101,18 @@ class Inventory:
         self.ore = player_data["ore"]
         self.dream_orbs = player_data["dreamOrbs"]
         self.play_time = player_data["playTime"]
+
+
+class HollowKnight:
+
+    def __init__(self, file_handle: FileIO):
+        player_data = file_handle.player_data
+
+        self.charm_slots = player_data["charmSlots"]
+        self.blue_health = player_data["healthBlue"]
+        self.nail_damage = player_data["nailDamage"]
+        self.nail_range = player_data["nailRange"]
+        self.beam_damage = player_data["beamDamage"]
 
 
 class Environment:
@@ -184,4 +191,5 @@ if __name__ == '__main__':
  'maxMP': 99,
  'nailDamage': 17,
  'nailRange': 0,
+ "charmSlots"
  """
