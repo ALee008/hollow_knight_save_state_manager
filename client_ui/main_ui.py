@@ -3,6 +3,7 @@ import itertools
 from typing import Any, Dict
 
 import hollow
+import constants
 
 import PySimpleGUI as sg
 
@@ -168,6 +169,10 @@ def charms_layout():
 
     for frame_layout in names_images_checkboxes:
         frames_layout.append(sg.Frame(layout=frame_layout, title="", element_justification="center"))
+
+    # sort charms in GUI like order in game
+    frames_layout = sorted(frames_layout,
+                           key=lambda frame: constants.CHARMS_DISPLAY_ORDER.index(frame.Rows[0][0].DisplayText))
 
     final_layout = list(chunk(frames_layout, 10))
 

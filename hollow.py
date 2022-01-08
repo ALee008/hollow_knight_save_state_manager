@@ -16,16 +16,6 @@ def filter_non_number_value_from(dictionary: dict):
     return result_dict
 
 
-def map_charm_to_order_number() -> Dict[str, List[Union[str, bool]]]:
-    """Map name of charm to key in user.dat and a flag if user has charm.
-    E.g.: {"Wayward Compass": ["gotCharm_1": False], ... }
-    """
-    charms_to_number = {charm: [f"gotCharm_{idx}", False] for idx, charm in
-                        enumerate(constants.CHARMS, start=1)}
-
-    return charms_to_number
-
-
 class FileIO:
 
     def __init__(self, user_data_path):
