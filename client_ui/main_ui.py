@@ -221,6 +221,9 @@ def main():
             try:
                 save_state_file_path = sg.popup_get_file("Save State", no_window=True,
                                                          file_types=(("User Data", "*.dat"),))
+                # if no file is selected -> do nothing (continue)
+                if not save_state_file_path:
+                    continue
                 file_io = hollow.FileIO(save_state_file_path)
                 update_inventory_ui(window, file_io)
                 update_knight_ui(window, file_io)
