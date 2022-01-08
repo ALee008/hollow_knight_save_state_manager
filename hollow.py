@@ -1,4 +1,5 @@
 import json
+import os
 import shutil
 import pathlib
 
@@ -47,7 +48,8 @@ class FileIO:
 
 
 class CharmsImages:
-    image_path: pathlib.Path = pathlib.Path("../images/charms")
+    cwd = pathlib.Path(__file__).parent
+    image_path: pathlib.Path = pathlib.Path(cwd).joinpath("images/charms")
     charm_to_image: Dict[str, pathlib.Path]
 
     def __init__(self):
